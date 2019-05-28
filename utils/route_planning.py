@@ -6,7 +6,23 @@ config = json.load(open('../config.json'))
 BASE_URL = config["DISTANCE_MATRIX_BASE_URL"]
 API_KEY = config["API_KEY"]
 
-def get_distance(origin, destination, date_str, time_str):
+# Get the distance between two locations. Output response
+# includes the distance in miles, and the time duration
+# between the two locations.
+#
+#                     -- Parameters --
+#    - origin: Address of the starting destination (STRING)
+#    - destination: Address of the final destination (STRING)
+#    - date_str: Date to use when calculating departure time.
+#                Uses format "MM/DD/YYYY". (STRING)
+#                Note: date_str is optional. Current datetime
+#                      will be used if ommitted.
+#    - time_str: Time to use when calculating departure time.
+#                Uses format "HH:MM" (STRING)
+#                Note: time_str is optional. Current datetime
+#                      will be used if ommitted.
+#
+def get_distance(origin, destination, date_str=None, time_str=None):
 	
 	# Prepare the input information for departure_time
 	# parameter.
@@ -25,21 +41,20 @@ def get_distance(origin, destination, date_str, time_str):
 			
 		# Calculate the seconds since the epoch based on the entered
 		# date and time value.
-		departure_time = datetime(year, month, day, hour, minute, 0)
-		dt_in_seconds = round((departure_time - epoch).total_seconds())
+		departure_dt = datetime(year, month, day, hour, minute, 0)
+		departure_time = round((departure_dt - epoch).total_seconds())
 	
 	# Set parameters for API call
 	params = {'units': 'imperial', \
 				'origins': origin, \
 				'destinations': destination, \
 				'key': API_KEY, \
-				'departure_time': dt_in_seconds}
+				'departure_time': departure_time}
 	
 	# Call the API to get the distance data
 	r = requests.get(url=BASE_URL, params=params)
 	return(r.json())
 	
 
-
 # Test call
-get_distance('Durham, NC, USA', 'Raleigh, NC, USA',"05/30/2019","17:00")
+print(get_distance('Durham, NC, USA', 'Raleigh, NC, USA'))
