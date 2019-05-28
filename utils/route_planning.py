@@ -3,7 +3,8 @@ from datetime import datetime
 
 ### Constants ###
 config = json.load(open('../config.json'))
-BASE_URL = config["DISTANCE_MATRIX_BASE_URL"]
+DISTANCE_MATRIX_BASE_URL = config["DISTANCE_MATRIX_BASE_URL"]
+GEOCODE_BASE_URL = config["GEOCODE_BASE_URL"]
 API_KEY = config["API_KEY"]
 
 # Get the distance between two locations. Output response
@@ -21,8 +22,11 @@ API_KEY = config["API_KEY"]
 #                Uses format "HH:MM" (STRING)
 #                Note: time_str is optional. Current datetime
 #                      will be used if ommitted.
+#    - print_bool: Boolean which controls whether the json
+#                  result will get pretty printed to stdout (BOOLEAN)
+#                  Note: print_bool is optional. Defaults to False.
 #
-def get_distance(origin, destination, date_str=None, time_str=None):
+def get_distance(origin, destination, date_str=None, time_str=None, print_bool=False):
 	
 	# Prepare the input information for departure_time
 	# parameter.
@@ -48,13 +52,43 @@ def get_distance(origin, destination, date_str=None, time_str=None):
 	params = {'units': 'imperial', \
 				'origins': origin, \
 				'destinations': destination, \
-				'key': API_KEY, \
-				'departure_time': departure_time}
+				'departure_time': departure_time, \
+				'key': API_KEY}
 	
 	# Call the API to get the distance data
-	r = requests.get(url=BASE_URL, params=params)
+	r = requests.get(url=DISTANCE_MATRIX_BASE_URL, params=params)
+	
+	if print_bool:
+		print(json.dumps(r.json(), indent=4))
+		
+	return(r.json())
+
+
+# Returns the latitude and longitude of an address for for clustering
+# purposes. 
+#               -- Parameters --
+#    - address: The input address text to obtain the latitude and 
+#               longitude coordinates for. (STRING)
+#    - print_bool: Boolean which controls whether the json
+#                  result will get pretty printed to stdout (BOOLEAN)
+#                  Note: print_bool is optional. Defaults to False.
+#
+def geocode_address(address, print_bool=False):
+
+	# Set parameters for API call
+	params = {'address': address, \
+				'key': API_KEY}
+	
+	# Call the API to get the distance data
+	r = requests.get(url=GEOCODE_BASE_URL, params=params)
+	
+	if print_bool:
+		print(json.dumps(r.json(), indent=4))
+	
 	return(r.json())
 	
 
 # Test call
-print(get_distance('Durham, NC, USA', 'Raleigh, NC, USA'))
+get_distance('Durham, NC, USA', 'Raleigh, NC, USA', print_bool=True)
+geocode_address('Durham, NC, USA', print_bool=True)
+geocode_address('Raleigh, NC, USA', print_bool=True)
